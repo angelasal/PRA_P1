@@ -104,4 +104,16 @@ public:
     }
 };
 
+// Sobrecarga del operador << para imprimir ListArray<T>
+template <typename T>
+std::ostream& operator<<(std::ostream& os, const ListArray<T>& list) {
+    os << "[";
+    for (int i = 0; i < list.size(); ++i) {
+        os << list.get(i);
+        if (i < list.size() - 1) os << ", ";
+    }
+    os << "]";
+    return os;
+}
+
 #endif // LISTARRAY_H
