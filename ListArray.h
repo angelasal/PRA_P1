@@ -1,117 +1,120 @@
-
 #ifndef LISTARRAY_H
 #define LISTARRAY_H
 
-#include "List.h"
-#include <stdexcept>
-#include <iostream>
+#include <stdexcept> // para lanzar std::out_of_range
+#include <ostream>   // para declarar operator<<
 
-// Clase genérica que implementa una lista usando un array dinámico
-template <typename T>
-class ListArray : public List<T> {
+template<typename T>               // clase genérica parametrizada por T
+class ListArray {
 private:
-    T* data;
-    int capacity;
-    int count;
+    T* arr;                       // puntero al inicio del array dinámico
+    int max;                      // capacidad actual (cuántos caben)
+    int n;                        // número de elementos almacenados
+    static const int MINSIZE = 2; // tamaño mínimo del array (=2)
 
-    void resize(int new_capacity) {
-        T* new_data = new T[new_capacity];
-        for (int i = 0; i < count; ++i) {
-            new_data[i] = data[i];
-        }
-        delete[] data;
-        data = new_data;
-        capacity = new_capacity;
+    // redimensiona el array a new_size siguiendo los pasos pedidos
+    void resize(int new_size) {
+        if (new_size < MINSIZE) new_size = MINSIZE;   // 1) no permitir < MINSIZE
+        T* new_arr = new T[new_size];                 // 2) crear nuevo array con new_size
+        for (int i = 0; i < n; ++i)                   // 3) copiar los n elementos válidos
+            new_arr[i] = arr[i];
+        delete[] arr;                                 // 4) liberar memoria del array viejo
+        arr = new_arr;                                // 5) actualizar puntero arr
+        max = new_size;                               // 6) actualizar capacidad max
     }
 
 public:
-    ListArray(int init_capacity = 10) {
-        data = new T[init_capacity];
-        capacity = init_capacity;
-        count = 0;
+    // constructor sin argumentos: reserva MINSIZE elementos
+    ListArray() {
+        arr = new T[MINSIZE]; // reservar memoria para MINSIZE elementos
+        max = MINSIZE;        // establecer capacidad inicial
+        n = 0;                // empezar con 0 elementos
     }
 
+    // constructor con capacidad inicial (opcional, mínima MINSIZE)
+    ListArray(int init_capacity) {
+        if (init_capacity < MINSIZE) init_capacity = MINSIZE; // asegurar mínimo
+        arr = new T[init_capacity]; // reservar memoria
+        max = init_capacity;        // fijar capacidad
+        n = 0;                      // lista vacía inicialmente
+    }
+
+    // destructor: libera la memoria dinámica reservada
     ~ListArray() {
-        delete[] data;
+        delete[] arr; // liberar array al destruir el objeto
     }
 
-    void insert(int pos, T e) override {
-        if (pos < 0 || pos > count) {
-            throw std::out_of_range("Posición inválida en insert()");
+    // inserta e en la posición pos (0 <= pos <= n)
+    void insert(int pos, T e) {
+        if (pos < 0 || pos > n)                            // validar posición
+            throw std::out_of_range("insert: posición inválida");
+        if (n == max) resize(max * 2);                     // ampliar si está lleno
+        for (int i = n; i > pos; --i)                      // desplazar elementos a la derecha
+            arr[i] = arr[i - 1];
+        arr[pos] = e;                                      // colocar el nuevo elemento
+        ++n;                                               // aumentar contador de elementos
+    }
+
+    // añade e al final de la lista
+    void append(T e) {
+        insert(n, e); // reutiliza insert para evitar duplicar código
+    }
+
+    // añade e al principio de la lista
+    void prepend(T e) {
+        insert(0, e); // reutiliza insert para insertar en la posición 0
+    }
+
+    // elimina y devuelve el elemento en pos (0 <= pos < n)
+    T remove(int pos) {
+        if (pos < 0 || pos >= n)                           // validar posición
+            throw std::out_of_range("remove: posición inválida");
+        T value = arr[pos];                                // guardar valor a devolver
+        for (int i = pos; i < n - 1; ++i)                  // desplazar elementos a la izquierda
+            arr[i] = arr[i + 1];
+        --n;                                               // disminuir contador
+        // reducir tamaño si está demasiado vacío (umbral: 1/4) y no bajar de MINSIZE
+        if (n <= max / 4 && max / 2 >= MINSIZE) resize(max / 2);
+        return value;                                      // devolver elemento eliminado
+    }
+
+    // acceso con corchetes (no const): devuelve referencia para poder modificar
+    T& operator[](int pos) {
+        if (pos < 0 || pos >= n)                          // comprobar rango
+            throw std::out_of_range("operator[]: fuera de rango");
+        return arr[pos];                                  // devolver referencia al elemento
+    }
+
+    // versión const de operator[]: devuelve referencia const
+    const T& operator[](int pos) const {
+        if (pos < 0 || pos >= n)                          // comprobar rango
+            throw std::out_of_range("operator[]: fuera de rango");
+        return arr[pos];                                  // devolver referencia const
+    }
+
+    // obtiene copia del elemento en pos (comprobando rango)
+    T get(int pos) const {
+        if (pos < 0 || pos >= n)
+            throw std::out_of_range("get: fuera de rango");
+        return arr[pos];                                  // devolver copia
+    }
+
+    // número de elementos almacenados
+    int size() const { return n; }
+
+    // indica si la lista está vacía
+    bool empty() const { return n == 0; }
+
+    // impresión simple: [a, b, c]
+    friend std::ostream& operator<<(std::ostream& out, const ListArray<T>& list) {
+        out << "[";                                      // abrir corchetes
+        for (int i = 0; i < list.n; ++i) {               // recorrer elementos
+            out << list.arr[i];                          // imprimir elemento
+            if (i + 1 < list.n) out << ", ";            // separar con coma si no es el último
         }
-        if (count == capacity) {
-            resize(capacity * 2);
-        }
-        for (int i = count; i > pos; --i) {
-            data[i] = data[i - 1];
-        }
-        data[pos] = e;
-        ++count;
-    }
-
-    void append(T e) override {
-        insert(count, e);
-    }
-
-    void prepend(T e) override {
-        insert(0, e);
-    }
-
-    T remove(int pos) override {
-        if (pos < 0 || pos >= count) {
-            throw std::out_of_range("Posición inválida en remove()");
-        }
-        T removed = data[pos];
-        for (int i = pos; i < count - 1; ++i) {
-            data[i] = data[i + 1];
-        }
-        --count;
-        return removed;
-    }
-
-    T get(int pos) const override {
-        if (pos < 0 || pos >= count) {
-            throw std::out_of_range("Posición inválida en get()");
-        }
-        return data[pos];
-    }
-
-    int search(T e) override {
-        for (int i = 0; i < count; ++i) {
-            if (data[i] == e) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    bool empty() override {
-        return count == 0;
-    }
-
-    int size() const override {
-        return count;
-    }
-
-    T& operator[](int index) {
-        return data[index];
-    }
-
-    const T& operator[](int index) const {
-        return data[index];
+        out << "]";                                      // cerrar corchetes
+        return out;                                      // devolver stream
     }
 };
-
-// Sobrecarga del operador << para imprimir ListArray<T>
-template <typename T>
-std::ostream& operator<<(std::ostream& os, const ListArray<T>& list) {
-    os << "[";
-    for (int i = 0; i < list.size(); ++i) {
-        os << list.get(i);
-        if (i < list.size() - 1) os << ", ";
-    }
-    os << "]";
-    return os;
-}
 
 #endif // LISTARRAY_H
