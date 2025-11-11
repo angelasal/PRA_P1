@@ -1,132 +1,112 @@
 #ifndef LISTLINKED_H
 #define LISTLINKED_H
 
-#include "List.h"        // interfaz List<T>
-#include <stdexcept>     // para std::out_of_range
-#include <ostream>       // para operator<<
+#include "List.h"
+#include <stdexcept>
+#include <ostream>
 
 template<typename T>
 class ListLinked : public List<T> {
 private:
-    struct Node {          // nodo interno sencillo
-        T data;            // dato almacenado
-        Node* next;        // puntero al siguiente nodo
-        Node(T d) : data(d), next(nullptr) {} // constructor del nodo
+    struct Node { 
+        T data;
+        Node* next;
+        Node(T d) : data(d), next(nullptr) {}
     };
 
-    Node* first;           // puntero al primer nodo de la lista
-    int n;                 // número de elementos que contiene la lista
+    Node* first;
+    int n;
 
 public:
-    // constructor: lista vacía
     ListLinked() : first(nullptr), n(0) {}
 
-    // destructor: libera todos los nodos
     ~ListLinked() {
         while (first != nullptr) {
-            Node* temp = first;    // guardar nodo actual
-            first = first->next;   // avanzar al siguiente
-            delete temp;           // eliminar nodo anterior
+            Node* temp = first;
+            first = first->next;
+            delete temp;
         }
     }
 
-    // insert: insertar e en posición pos (0 <= pos <= n)
     void insert(int pos, T e) override {
         if (pos < 0 || pos > n) throw std::out_of_range("insert: posición inválida");
-        Node* nuevo = new Node(e);        // crear nodo nuevo
-        if (pos == 0) {                   // insertar al principio
+        Node* nuevo = new Node(e);
+        if (pos == 0) {
             nuevo->next = first;
             first = nuevo;
-        } else {                          // insertar en medio o final
-            Node* cur = first;
-            for (int i = 0; i < pos - 1; ++i) cur = cur->next;
-            nuevo->next = cur->next;
-            cur->next = nuevo;
+        } else {
+            Node* aux = first;
+            for (int i = 0; i < pos - 1; i++) aux = aux->next;
+            nuevo->next = aux->next;
+            aux->next = nuevo;
         }
-        ++n;                              // actualizar contador
+        n++;
     }
 
-    // append: añadir al final (reusa insert)
     void append(T e) override { insert(n, e); }
 
-    // prepend: añadir al principio (reusa insert)
     void prepend(T e) override { insert(0, e); }
 
-    // remove: eliminar y devolver elemento en pos (0 <= pos < n)
     T remove(int pos) override {
         if (pos < 0 || pos >= n) throw std::out_of_range("remove: posición inválida");
         Node* to_delete;
         T value;
-        if (pos == 0) {                   // eliminar primer nodo
+        if (pos == 0) {
             to_delete = first;
             value = to_delete->data;
             first = first->next;
-        } else {                          // eliminar nodo intermedio o final
-            Node* cur = first;
-            for (int i = 0; i < pos - 1; ++i) cur = cur->next;
-            to_delete = cur->next;
+        } else {
+            Node* aux = first;
+            for (int i = 0; i < pos - 1; ++i) aux = aux->next;
+            to_delete = aux->next;
             value = to_delete->data;
-            cur->next = to_delete->next;
+            aux->next = to_delete->next;
         }
-        delete to_delete;                 // liberar nodo eliminado
-        --n;                              // actualizar contador
-        return value;                     // devolver valor eliminado
+        delete to_delete;
+        n--;
+        return value;
     }
 
-    // acceso con corchetes (no const): devuelve referencia para poder modificar
     T& operator[](int pos) {
         if (pos < 0 || pos >= n) throw std::out_of_range("operator[]: fuera de rango");
-        Node* cur = first;
-        for (int i = 0; i < pos; ++i) cur = cur->next;
-        return cur->data;
+        Node* aux = first;
+        for (int i = 0; i < pos; ++i) aux = aux->next;
+        return aux->data;
     }
 
-    // acceso con corchetes const: devuelve referencia const
-    const T& operator[](int pos) const {
-        if (pos < 0 || pos >= n) throw std::out_of_range("operator[]: fuera de rango");
-        Node* cur = first;
-        for (int i = 0; i < pos; ++i) cur = cur->next;
-        return cur->data;
-    }
-
-    // get: devolver copia del elemento en pos (comprobando rango)
     T get(int pos) const override {
         if (pos < 0 || pos >= n) throw std::out_of_range("get: posición inválida");
-        Node* cur = first;
-        for (int i = 0; i < pos; ++i) cur = cur->next;
-        return cur->data;
+        Node* aux = first;
+        for (int i = 0; i < pos; ++i) aux = aux->next;
+        return aux->data;
     }
 
-    // search: buscar primera ocurrencia de e, devolver índice o -1
     int search(T e) override {
-        Node* cur = first;
+        Node* aux = first;
         int idx = 0;
-        while (cur != nullptr) {
-            if (cur->data == e) return idx;
-            cur = cur->next;
+        while (aux != nullptr) {
+            if (aux->data == e) return idx;
+            aux = aux->next;
             ++idx;
         }
         return -1;
     }
 
-    // empty: true si no hay elementos
     bool empty() override { return n == 0; }
 
-    // size: número de elementos
     int size() const override { return n; }
 
-    // impresión simple: [a, b, c]
     friend std::ostream& operator<<(std::ostream& out, const ListLinked<T>& list) {
-        out << "[";                              // abrir corchetes
-        Node* cur = list.first;                  // empezar desde el primer nodo
-        while (cur != nullptr) {                 // mientras haya nodos
-            out << cur->data;                    // imprimir el dato
-            cur = cur->next;                     // avanzar al siguiente
-            if (cur != nullptr) out << ", ";    // separar con coma si no es el último
+        out << "[";
+        Node* aux = list.first;
+        while (aux != nullptr) {
+            out << aux->data;
+            aux = aux->next;
+            if (aux != nullptr) out << ", ";
         }
-        out << "]";                              // cerrar corchetes
-        return out;                              // devolver stream
+        out << "]";
+        return out;
     }
 };
 
-#endif // LISTLINKED_H
+#endif
