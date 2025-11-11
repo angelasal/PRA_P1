@@ -6,6 +6,7 @@
 
 template<typename T>
 class ListArray {
+
 private:
     T* arr;
     int max;
@@ -20,6 +21,7 @@ private:
         delete[] arr;
         arr = new_arr; 
         max = new_size;
+
 
 public:
     ListArray() {
@@ -53,6 +55,7 @@ public:
         insert(0, e); 
     }
 
+
     int search(T e) {
         for (int i = 0; i < n; ++i) {
             if (arr[i] == e) return i; 
@@ -73,11 +76,13 @@ public:
         return value;
     }
 
+
     T& operator[](int pos) {
         if (pos < 0 || pos >= n)
             throw std::out_of_range("operator[]: fuera de rango");
         return arr[pos];
     }
+
 
     T get(int pos) const {
         if (pos < 0 || pos >= n)
@@ -85,9 +90,11 @@ public:
         return arr[pos];
     }
 
+
     int size() const { return n; }
 
     bool empty() const { return n == 0; }
+
 
     friend std::ostream& operator<<(std::ostream& out, const ListArray<T>& list) {
         out << "[";
