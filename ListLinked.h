@@ -7,15 +7,16 @@
 
 template<typename T>
 class ListLinked : public List<T> {
+
 private:
     struct Node { 
         T data;
         Node* next;
         Node(T d) : data(d), next(nullptr) {}
     };
-
     Node* first;
     int n;
+
 
 public:
     ListLinked() : first(nullptr), n(0) {}
@@ -27,6 +28,7 @@ public:
             delete temp;
         }
     }
+
 
     void insert(int pos, T e) override {
         if (pos < 0 || pos > n) throw std::out_of_range("insert: posición inválida");
@@ -46,6 +48,7 @@ public:
     void append(T e) override { insert(n, e); }
 
     void prepend(T e) override { insert(0, e); }
+
 
     T remove(int pos) override {
         if (pos < 0 || pos >= n) throw std::out_of_range("remove: posición inválida");
@@ -67,6 +70,7 @@ public:
         return value;
     }
 
+
     T& operator[](int pos) {
         if (pos < 0 || pos >= n) throw std::out_of_range("operator[]: fuera de rango");
         Node* aux = first;
@@ -74,12 +78,14 @@ public:
         return aux->data;
     }
 
+
     T get(int pos) const override {
         if (pos < 0 || pos >= n) throw std::out_of_range("get: posición inválida");
         Node* aux = first;
         for (int i = 0; i < pos; ++i) aux = aux->next;
         return aux->data;
     }
+
 
     int search(T e) override {
         Node* aux = first;
@@ -92,9 +98,11 @@ public:
         return -1;
     }
 
+
     bool empty() override { return n == 0; }
 
     int size() const override { return n; }
+
 
     friend std::ostream& operator<<(std::ostream& out, const ListLinked<T>& list) {
         out << "[";
