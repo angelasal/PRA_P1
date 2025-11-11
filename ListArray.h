@@ -65,7 +65,7 @@ public:
         if (pos < 0 || pos >= n)
             throw std::out_of_range("remove: posición inválida");
         T value = arr[pos];
-        for (int i = pos; i < n - 1; ++i)
+        for (int i = pos; i < n - 1; i++)
             arr[i] = arr[i + 1];
         n--;
         
