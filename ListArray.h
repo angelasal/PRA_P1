@@ -39,6 +39,14 @@ public:
         n = 0;                      // lista vacía inicialmente
     }
 
+    // buscar primera ocurrencia de e, devolver índice o -1
+    int search(T e) {
+        for (int i = 0; i < n; ++i) {           // recorrer elementos
+            if (arr[i] == e) return i;          // si coincide, devolver índice
+        }
+        return -1;                              // si no encuentra, devolver -1
+    }
+
     // destructor: libera la memoria dinámica reservada
     ~ListArray() {
         delete[] arr; // liberar array al destruir el objeto
@@ -83,13 +91,6 @@ public:
         if (pos < 0 || pos >= n)                          // comprobar rango
             throw std::out_of_range("operator[]: fuera de rango");
         return arr[pos];                                  // devolver referencia al elemento
-    }
-
-    // versión const de operator[]: devuelve referencia const
-    const T& operator[](int pos) const {
-        if (pos < 0 || pos >= n)                          // comprobar rango
-            throw std::out_of_range("operator[]: fuera de rango");
-        return arr[pos];                                  // devolver referencia const
     }
 
     // obtiene copia del elemento en pos (comprobando rango)
